@@ -8,13 +8,27 @@ const redColors = Array.from({ length: 100 }, (v, k) => {
   return `rgb(${220 - k * 10}, 62, 62)`;
 });
 
+const precision = {
+  btcusdt: 2,
+  ethusdt: 2,
+  xrpusdt: 4,
+  ltcusdt: 2,
+  solusdt: 2,
+  bnbusdt: 2,
+  dogeusdt: 5,
+  pepeusdt: 9,
+}
+
 const app = {
   data() {
     return {
       message: "Hello Vue!",
       redColors,
       greenColors,
+      sheetOpen: false,
+      selectedCoinString: '',
       coins: [],
+      ws: null,
     };
   },
   mounted() {
@@ -50,13 +64,14 @@ const app = {
       const defaultValue = [
         "btcusdt",
         "ethusdt",
-        "xrpusdt",
         "ltcusdt",
         "solusdt",
         "bnbusdt",
+        "dogeusdt",
       ];
       const coinList = this.getLocalStorage("coinList") || defaultValue;
       this.setLocalStorage("coinList", coinList);
+      this.selectedCoinString = coinList.join(",");
       this.coins = coinList.map((coin) => {
         return {
           symbol: coin.toUpperCase(),
@@ -69,7 +84,7 @@ const app = {
         .map((coin) => `${coin}@kline_5m`)
         .join("/")}`;
       // const wsUrl = `wss://stream.binance.com:443/ws/${coinList.map(coin => `${coin}@kline_1m`).join('/')}`
-      const ws = new WebSocketClient({
+      this.ws = new WebSocketClient({
         url: wsUrl,
         onmessageHandler: this.messageHandler,
       });
@@ -78,13 +93,14 @@ const app = {
       console.log(data);
       const coinIndex = this.coins.findIndex((coin) => data.s === coin.symbol);
       if (coinIndex !== -1) {
-        const currentPrice = Number(data.k.c).toFixed(2);
+        const precisionValue = this.getPrecision(data.s);
+        const currentPrice = Number(data.k.c).toFixed(precisionValue);
         this.coins[coinIndex].price = currentPrice;
         this.coins[coinIndex].amplitude = (
           ((currentPrice - this.coins[coinIndex].openPrice) /
             this.coins[coinIndex].openPrice) *
           100
-        ).toFixed(2);
+        ).toFixed(precisionValue);
       }
     },
     getLocalStorage(key) {
@@ -111,7 +127,8 @@ const app = {
         .then((response) => response.json())
         .then((data) => {
           console.log(data);
-          const openPrice = Number(data[0][1]).toFixed(2);
+          const precisionValue = this.getPrecision(code);
+          const openPrice = Number(data[0][1]).toFixed(precisionValue);
           return openPrice;
         });
     },
@@ -124,6 +141,17 @@ const app = {
 
       return `${year}${month}${day}`;
     },
+    getPrecision(code) {
+      return precision[code.toLowerCase()] || 4;
+    },
+    onSave() {
+      const coinList = this.selectedCoinString.split(",").filter(Boolean);
+      this.setLocalStorage("coinList", coinList);
+      this.ws?.close?.()
+      this.connectWebSocket();
+      this.getDailyOpenPriceBatch();
+      this.sheetOpen = false;
+    }
   },
 };
 
@@ -147,6 +175,21 @@ export default app;
       </div>
     </div>
   </div>
+  <v-bottom-sheet v-model="sheetOpen" inset>
+    <template v-slot:activator="{ props }">
+      <v-fab v-bind="props" class="edit-icon" icon="$vuetify"></v-fab>
+    </template>
+
+    <v-card title="编辑币种">
+      <v-card-text>
+        <v-textarea label="Label" v-model="selectedCoinString"></v-textarea>
+      </v-card-text>
+      <v-card-actions>
+        <v-btn text @click="sheetOpen = !sheetOpen">Cancel</v-btn>
+        <v-btn text @click="onSave">Save</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-bottom-sheet>
 </template>
 
 <style scoped>
@@ -196,5 +239,11 @@ export default app;
   font-weight: normal;
   color: white;
   text-align: center;
+}
+
+.edit-icon {
+  position: fixed;
+  right: 80px;
+  bottom: 60px;
 }
 </style>
