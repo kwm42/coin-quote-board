@@ -17,7 +17,7 @@ const precision = {
   bnbusdt: 2,
   dogeusdt: 5,
   pepeusdt: 9,
-}
+};
 
 const app = {
   data() {
@@ -26,7 +26,8 @@ const app = {
       redColors,
       greenColors,
       sheetOpen: false,
-      selectedCoinString: '',
+      snackbarOpen: false,
+      selectedCoinString: "",
       coins: [],
       ws: null,
     };
@@ -46,7 +47,7 @@ const app = {
             (item) => item.symbol === coin.symbol
           );
           if (openPrice) {
-            coin.openPrice = openPrice.price;
+            coin.openPrice = openPrice.openPrice;
           }
         });
         return;
@@ -84,10 +85,10 @@ const app = {
         .map((coin) => `${coin}@kline_5m`)
         .join("/")}`;
       // const wsUrl = `wss://stream.binance.com:443/ws/${coinList.map(coin => `${coin}@kline_1m`).join('/')}`
-      this.ws = new WebSocketClient({
-        url: wsUrl,
-        onmessageHandler: this.messageHandler,
-      });
+      // this.ws = new WebSocketClient({
+      //   url: wsUrl,
+      //   onmessageHandler: this.messageHandler,
+      // });
     },
     messageHandler(data) {
       console.log(data);
@@ -147,11 +148,15 @@ const app = {
     onSave() {
       const coinList = this.selectedCoinString.split(",").filter(Boolean);
       this.setLocalStorage("coinList", coinList);
-      this.ws?.close?.()
+      this.ws?.close?.();
       this.connectWebSocket();
       this.getDailyOpenPriceBatch();
       this.sheetOpen = false;
-    }
+    },
+    clearStorage() {
+      localStorage.clear();
+      this.snackbarOpen = true;
+    },
   },
 };
 
@@ -175,6 +180,14 @@ export default app;
       </div>
     </div>
   </div>
+  <v-fab
+    v-bind="props"
+    class="clear-icon"
+    icon="$vuetify"
+    @click="clearStorage"
+  >
+    <v-icon icon="mdi-close-thick" />
+  </v-fab>
   <v-bottom-sheet v-model="sheetOpen" inset>
     <template v-slot:activator="{ props }">
       <v-fab v-bind="props" class="edit-icon" icon="$vuetify"></v-fab>
@@ -190,6 +203,14 @@ export default app;
       </v-card-actions>
     </v-card>
   </v-bottom-sheet>
+  <v-snackbar v-model="snackbarOpen" class="clear-tip" :timeout="2000">
+    <span>清除成功</span>
+    <template v-slot:actions>
+      <v-btn color="red" variant="text" @click="snackbarOpen = false">
+        Close
+      </v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <style scoped>
@@ -244,6 +265,12 @@ export default app;
 .edit-icon {
   position: fixed;
   right: 80px;
+  bottom: 60px;
+}
+
+.clear-icon {
+  position: fixed;
+  right: 160px;
   bottom: 60px;
 }
 </style>
