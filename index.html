@@ -28,7 +28,8 @@
     {
       "imports": {
         "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js",
-        "websocketClient": "./websocket-client.js"
+        "websocketClient": "./websocket-client.js",
+        "alarm": "./alarm.js"
       }
     }
   </script>
@@ -36,6 +37,7 @@
   <script type="module">
     import { createApp } from 'vue'
     import { WebSocketClient } from 'websocketClient'
+    import { Alarm } from 'alarm'
 
     const greenColors = Array.from({ length: 100 }, (v, k) => {
       return `rgb(15, ${173 - k * 10}, 134)`
@@ -99,7 +101,8 @@
               amplitude: 0
             }
           })
-          const wsUrl = `wss://stream.binance.com:9443/ws/${coinList.map(coin => `${coin}@kline_1m`).join('/')}`
+          const wsUrl = `wss://fstream.binance.com/ws/${coinList.map(coin => `${coin}@kline_5m`).join('/')}`
+          // const wsUrl = `wss://stream.binance.com:443/ws/${coinList.map(coin => `${coin}@kline_1m`).join('/')}`
           const ws = new WebSocketClient({
             url: wsUrl,
             onmessageHandler: this.messageHandler
@@ -149,7 +152,7 @@
           const day = today.getDate().toString().padStart(2, '0')
 
           return `${year}${month}${day}`
-        }
+        },
       }
     }
 
