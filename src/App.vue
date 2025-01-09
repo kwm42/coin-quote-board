@@ -85,10 +85,10 @@ const app = {
         .map((coin) => `${coin}@kline_5m`)
         .join("/")}`;
       // const wsUrl = `wss://stream.binance.com:443/ws/${coinList.map(coin => `${coin}@kline_1m`).join('/')}`
-      // this.ws = new WebSocketClient({
-      //   url: wsUrl,
-      //   onmessageHandler: this.messageHandler,
-      // });
+      this.ws = new WebSocketClient({
+        url: wsUrl,
+        onmessageHandler: this.messageHandler,
+      });
     },
     messageHandler(data) {
       console.log(data);
