@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>实时比特币行情 (WebSocket)</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="./echarts.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <div class="container">
+      <div class="block" v-for="(pair, index) in coins" :style="{ backgroundColor: redColors[index] }">
+        <div class="title">{{ pair.symbol }}</div>
+        <div class="price">{{ pair.price }}</div>
+      </div>
+    </div>
+  </div>
+
+
+  <script type="importmap">
+    {
+      "imports": {
+        "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js",
+        "websocketClient": "./websocket-client.js"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import { createApp } from 'vue'
+    import { WebSocketClient } from 'websocketClient'
+
+    const greenColors = Array.from({ length: 100 }, (v, k) => {
+      return `rgb(126, ${215 - k * 10}, 193)`
+    })
+    const redColors = Array.from({ length: 100 }, (v, k) => {
+      return `rgb(${220 - k * 10}, 62, 62)`
+    })
+
+    const app = {
+      data() {
+        return {
+          message: 'Hello Vue!',
+          redColors,
+          greenColors,
+          coins: []
+        }
+      },
+      mounted() {
+        const coinList = [
+          'btcusdt',
+          'ethusdt',
+          'xrpusdt',
+          'ltcusdt',
+          'solusdt',
+          'bnbusdt',
+        ]
+        this.coins = coinList.map(coin => {
+          return {
+            symbol: coin.toUpperCase(),
+            price: 0
+          }
+        })
+        const messageHandler = (data) => {
+          console.log(data)
+          const coinIndex = this.coins.findIndex(coin => data.s === coin.symbol)
+          if (coinIndex !== -1) {
+            const currentPrice = Number(data.k.c).toFixed(2)
+            this.coins[coinIndex].price = currentPrice
+          }
+        }
+        const wsUrl = `wss://stream.binance.com:9443/ws/${coinList.map(coin => `${coin}@kline_1m`).join('/')}`
+        const ws = new WebSocketClient({
+          url: wsUrl,
+          onmessageHandler: messageHandler
+        })
+      }
+    }
+
+    createApp(app).mount('#app')
+  </script>
+</body>
+
+</html>

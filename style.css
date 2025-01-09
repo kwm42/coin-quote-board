@@ -1,0 +1,31 @@
+.container {
+  display: flex;
+  justify-content: flex-start;
+  gap: 0px;
+  flex-wrap: wrap;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 25%;
+  height: 50vh;
+  padding: 4px;
+  box-sizing: border-box;
+  background-color: #f00;
+}
+
+.block .title {
+  font-size: 36px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+}
+
+.block .price {
+  font-size: 36px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+}
