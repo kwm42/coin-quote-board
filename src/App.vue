@@ -1,5 +1,6 @@
 <script>
 import { WebSocketClient } from "./websocket-client";
+import { Alarm } from "./alarm";
 
 const greenColors = Array.from({ length: 100 }, (v, k) => {
   return `rgb(15, ${173 - k * 10}, 134)`;
@@ -30,6 +31,20 @@ const app = {
       selectedCoinString: "",
       coins: [],
       ws: null,
+      items: [
+        {
+          title: "播放",
+          handler: () => {
+            this.playAlarm();
+          },
+        },
+        {
+          title: "清除localstorage",
+          handler: () => {
+            this.clearStorage();
+          },
+        },
+      ],
     };
   },
   mounted() {
@@ -79,12 +94,15 @@ const app = {
           price: 50000,
           openPrice: 0,
           amplitude: 0,
+          attention: false,
         };
       });
       const wsUrl = `wss://fstream.binance.com/ws/${coinList
-        .map((coin) => `${coin}@kline_5m`)
+        .map((coin) => `${coin}@kline_15m`)
         .join("/")}`;
-      // const wsUrl = `wss://stream.binance.com:443/ws/${coinList.map(coin => `${coin}@kline_1m`).join('/')}`
+      if (/localhost|127\.0\.0\.1/.test(location.href)) {
+        return;
+      }
       this.ws = new WebSocketClient({
         url: wsUrl,
         onmessageHandler: this.messageHandler,
@@ -102,6 +120,13 @@ const app = {
             this.coins[coinIndex].openPrice) *
           100
         ).toFixed(precisionValue);
+        const currentKlineAmplitude = ((data.k.c - data.k.o) / data.k.o) * 100;
+        if (currentKlineAmplitude > 1) {
+          this.playAlarm();
+          this.coins[coinIndex].attention = true;
+        } else {
+          this.coins[coinIndex].attention = false;
+        }
       }
     },
     getLocalStorage(key) {
@@ -157,6 +182,12 @@ const app = {
       localStorage.clear();
       this.snackbarOpen = true;
     },
+    handleMenuClick(index) {
+      this.items[index].handler();
+    },
+    playAlarm() {
+      Alarm.playSound();
+    },
   },
 };
 
@@ -177,17 +208,26 @@ export default app;
         <div class="price">{{ pair.price }}</div>
         <div class="open-price">开盘价：{{ pair.openPrice }}</div>
         <div class="amplitude">涨跌幅：{{ pair.amplitude }}%</div>
+        <i v-if="pair.attention" class="attention"></i>
       </div>
     </div>
   </div>
-  <v-fab
-    v-bind="props"
-    class="clear-icon"
-    icon="$vuetify"
-    @click="clearStorage"
-  >
-    <v-icon icon="mdi-close-thick" />
-  </v-fab>
+
+  <v-menu>
+    <template v-slot:activator="{ props }">
+      <v-fab v-bind="props" class="menu-icon" icon="$vuetify">
+        <v-icon icon="mdi-menu" />
+      </v-fab>
+    </template>
+
+    <v-list style="cursor: pointer">
+      <v-list-item v-for="(item, index) in items" :key="index">
+        <v-list-item-title @click="() => handleMenuClick(index)">{{
+          item.title
+        }}</v-list-item-title>
+      </v-list-item>
+    </v-list>
+  </v-menu>
   <v-bottom-sheet v-model="sheetOpen" inset>
     <template v-slot:activator="{ props }">
       <v-fab v-bind="props" class="edit-icon" icon="$vuetify"></v-fab>
@@ -232,6 +272,7 @@ export default app;
 }
 
 .block-content {
+  position: relative;
   width: 100%;
   height: 100%;
   display: flex;
@@ -262,15 +303,45 @@ export default app;
   text-align: center;
 }
 
+.block-content .attention {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 14px;
+  height: 14px;
+  background-color: red;
+  border-radius: 50%;
+  animation: blink 1s infinite; /* 应用闪烁动画 */
+}
+
+@keyframes blink {
+  0% {
+    background-color: red; /* 红色 */
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
+  }
+  33% {
+    background-color: orange; /* 橙色 */
+    box-shadow: 0 0 5px rgba(255, 165, 0, 0.8);
+  }
+  66% {
+    background-color: yellow; /* 黄色 */
+    box-shadow: 0 0 5px rgba(255, 255, 0, 0.8);
+  }
+  100% {
+    background-color: red; /* 回到红色 */
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
+  }
+}
+
 .edit-icon {
   position: fixed;
   right: 80px;
   bottom: 60px;
 }
 
-.clear-icon {
+.menu-icon {
   position: fixed;
-  right: 160px;
+  right: 140px;
   bottom: 60px;
 }
 </style>

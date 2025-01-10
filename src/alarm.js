@@ -1,3 +1,5 @@
+const publicPath = import.meta.env.DEV ? import.meta.env.VITE_PUBLIC_PATH : './'
+
 class AlarmClient {
   constructor() {
     this.alarms = [];
@@ -16,7 +18,7 @@ class AlarmClient {
   }
 
   playSound() {
-    const audio = new Audio("./beep-07.mp3");
+    const audio = new Audio(`${publicPath}sound/sound1.mp3`);
     audio.play();
   }
 }
