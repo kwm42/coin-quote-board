@@ -95,6 +95,7 @@ const app = {
           openPrice: 0,
           amplitude: 0,
           attention: false,
+          currentKlineAmplitude: 0,
         };
       });
       const wsUrl = `wss://fstream.binance.com/ws/${coinList
@@ -127,6 +128,7 @@ const app = {
         } else {
           this.coins[coinIndex].attention = false;
         }
+        this.coins[coinIndex].currentKlineAmplitude = currentKlineAmplitude;
       }
     },
     getLocalStorage(key) {
@@ -201,7 +203,7 @@ export default app;
         class="block-content"
         :style="{
           backgroundColor:
-            pair.openPrice > pair.price ? redColors[0] : greenColors[0],
+            pair.currentKlineAmplitude < 0 ? redColors[0] : greenColors[0],
         }"
       >
         <div class="title">{{ pair.symbol }}</div>
