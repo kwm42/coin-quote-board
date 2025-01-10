@@ -305,31 +305,37 @@ export default app;
 
 .block-content .attention {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  width: 14px;
-  height: 14px;
-  background-color: red;
-  border-radius: 50%;
-  animation: blink 1s infinite; /* 应用闪烁动画 */
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(
+    to right,
+    red,
+    orange,
+    yellow,
+    green,
+    blue,
+    indigo,
+    violet,
+    red,
+    orange,
+    yellow,
+    green,
+    blue,
+    indigo,
+    violet
+  );
+  background-size: 500% 100%;
+  animation: rainbowMove 3s linear infinite;
 }
 
-@keyframes blink {
+@keyframes rainbowMove {
   0% {
-    background-color: red; /* 红色 */
-    box-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
-  }
-  33% {
-    background-color: orange; /* 橙色 */
-    box-shadow: 0 0 5px rgba(255, 165, 0, 0.8);
-  }
-  66% {
-    background-color: yellow; /* 黄色 */
-    box-shadow: 0 0 5px rgba(255, 255, 0, 0.8);
+    background-position: 0% 0%; /* 从左侧开始 */
   }
   100% {
-    background-color: red; /* 回到红色 */
-    box-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
+    background-position: 600% 0%; /* 移动到右侧 */
   }
 }
 
