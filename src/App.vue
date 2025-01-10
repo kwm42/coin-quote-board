@@ -122,7 +122,7 @@ const app = {
         ).toFixed(precisionValue);
         const currentKlineAmplitude = ((data.k.c - data.k.o) / data.k.o) * 100;
         if (currentKlineAmplitude > 1) {
-          this.playAlarm();
+          // this.playAlarm();
           this.coins[coinIndex].attention = true;
         } else {
           this.coins[coinIndex].attention = false;
