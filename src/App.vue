@@ -208,7 +208,12 @@ export default app;
         <div class="price">{{ pair.price }}</div>
         <div class="open-price">开盘价：{{ pair.openPrice }}</div>
         <div class="amplitude">涨跌幅：{{ pair.amplitude }}%</div>
-        <i v-if="pair.attention" class="attention"></i>
+        <div v-if="pair.attention" class="attention">
+          <div class="slide top"></div>
+          <div class="slide bottom"></div>
+          <div class="slide left"></div>
+          <div class="slide right"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -305,6 +310,17 @@ export default app;
 
 .block-content .attention {
   position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.block-content .attention .slide.top,
+.block-content .attention .slide.bottom,
+.block-content .attention .slide.left,
+.block-content .attention .slide.right {
+  position: absolute;
   top: 0px;
   left: 0px;
   width: 100%;
@@ -328,6 +344,24 @@ export default app;
   );
   background-size: 500% 100%;
   animation: rainbowMove 3s linear infinite;
+}
+
+.block-content .attention .slide.bottom {
+  top: calc(100% - 6px);
+}
+
+.block-content .attention .slide.left {
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+}
+
+.block-content .attention .slide.right {
+  top: 0;
+  left: calc(100% - 6px);
+  width: 6px;
+  height: 100%;
 }
 
 @keyframes rainbowMove {
