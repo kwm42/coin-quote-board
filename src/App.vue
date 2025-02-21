@@ -50,6 +50,7 @@ const app = {
   mounted() {
     this.connectWebSocket();
     this.getDailyOpenPriceBatch();
+    this.scheduleRefreshCheck();
   },
   methods: {
     getDailyOpenPriceBatch() {
@@ -189,6 +190,18 @@ const app = {
     },
     playAlarm() {
       Alarm.playSound();
+    },
+    scheduleRefreshCheck() {
+      setInterval(this.checkRefreshTime, 60000); // Check every minute
+    },
+    checkRefreshTime() {
+      const now = new Date();
+      const minutes = now.getMinutes();
+      if (minutes === 0 || minutes === 30) {
+        setTimeout(() => {
+          location.reload();
+        }, 60000); // Refresh after one minute
+      }
     },
   },
 };
